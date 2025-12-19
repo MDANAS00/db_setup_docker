@@ -1,39 +1,46 @@
 services:
-  mysql:
-    image: mariadb:10.5.9
-    container_name: mysql_db
-    logging:
-      driver: "json-file"
-    volumes:
-      - "./data/db:/var/lib/mysql:delegated"
-      - "./dumps:/sql"
-    ports:
-      - "${MYSQL_PORT}:3306"
+  # MySQL Database
+  mariadb:
+    image: mariadb:10.6
+    container_name: maria_db
+    restart: always
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-    restart: always
+    ports:
+      - "${MYSQL_PORT}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./dumps:/dumps
     networks:
       - db_network
 
+  # phpMyAdmin for Database Management
   phpmyadmin:
     image: phpmyadmin/phpmyadmin:latest
     container_name: phpmyadmin
+    restart: always
+    environment:
+      PMA_HOST: mariadb
+      PMA_PORT: 3306
+      PMA_ARBITRARY: 1
+      UPLOAD_LIMIT: ${UPLOAD_LIMIT}
+      MEMORY_LIMIT: ${MEMORY_LIMIT}
+      PMA_ABSOLUTE_URI: http://localhost:${PHPMYADMIN_PORT}/
+      SESSION_TIMEOUT: ${SESSION_TIMEOUT}
     ports:
       - "${PHPMYADMIN_PORT}:80"
-    environment:
-      PMA_HOST: mysql
-      PMA_PORT: 3306
-      UPLOAD_LIMIT: ${UPLOAD_LIMIT}
-    restart: always
     depends_on:
-      - mysql
+      - mariadb
     networks:
       - db_network
+
+volumes:
+  mysql_data:
+    driver: local
 
 networks:
   db_network:
     driver: bridge
-
