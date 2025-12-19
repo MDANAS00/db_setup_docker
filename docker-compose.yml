@@ -23,7 +23,7 @@ services:
     container_name: phpmyadmin
     restart: always
     environment:
-      PMA_HOST: mysql
+      PMA_HOST: mariadb
       PMA_PORT: 3306
       PMA_ARBITRARY: 1
       UPLOAD_LIMIT: ${UPLOAD_LIMIT}
